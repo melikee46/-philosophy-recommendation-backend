@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ItemType {
+  BOOK
+  MOVIE
+  SERIES
+}
+
+enum DifficultyLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum InteractionStatus {
+  SAVED
+  COMPLETED
+  DROPPED
+}
+
+model User {
+  id               String            @id @default(uuid())
+  email            String            @unique
+  username         String            @unique
+  passwordHash     String
+  role             Role              @default(USER)
+  refreshTokenHash String?
+  interactions     UserInteraction[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@map("users")
+}
+
+model Philosophy {
+  id               String                    @id @default(uuid())
+  slug             String                    @unique
+  name             String
+  coreTenets       String[]
+  era              String
+  description      String                    @db.Text
+  recommendations  RecommendationItem[]
+  quizOptionScores PhilosophyQuizOptionScore[]
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @updatedAt
+
+  @@map("philosophies")
+}
+
+model RecommendationItem {
+  id              String            @id @default(uuid())
+  title           String
+  type            ItemType
+  creator         String
+  releaseYear     Int
+  summary         String            @db.Text
+  difficultyLevel DifficultyLevel
+  philosophyId    String
+  philosophy      Philosophy        @relation(fields: [philosophyId], references: [id], onDelete: Cascade)
+  interactions    UserInteraction[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([philosophyId])
+  @@index([type])
+  @@index([difficultyLevel])
+  @@map("recommendation_items")
+}
+
+model UserInteraction {
+  id                   String             @id @default(uuid())
+  userId               String
+  recommendationItemId String
+  status               InteractionStatus  @default(SAVED)
+  rating               Int?
+  notes                String?            @db.Text
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recommendationItem   RecommendationItem @relation(fields: [recommendationItemId], references: [id], onDelete: Cascade)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@unique([userId, recommendationItemId])
+  @@index([userId])
+  @@index([status])
+  @@map("user_interactions")
+}
+
+model PhilosophyQuizQuestion {
+  id          String                 @id @default(uuid())
+  orderNumber Int                    @unique
+  question    String                 @db.Text
+  description String?                @db.Text
+  options     PhilosophyQuizOption[]
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+
+  @@map("quiz_questions")
+}
+
+model PhilosophyQuizOption {
+  id          String                      @id @default(uuid())
+  questionId  String
+  optionText  String                      @db.Text
+  orderNumber Int
+  question    PhilosophyQuizQuestion      @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  scores      PhilosophyQuizOptionScore[]
+  createdAt   DateTime                    @default(now())
+  updatedAt   DateTime                    @updatedAt
+
+  @@index([questionId])
+  @@map("quiz_options")
+}
+
+model PhilosophyQuizOptionScore {
+  id           String               @id @default(uuid())
+  optionId     String
+  philosophyId String
+  weight       Int                  @default(1)
+  option       PhilosophyQuizOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  philosophy   Philosophy           @relation(fields: [philosophyId], references: [id], onDelete: Cascade)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@unique([optionId, philosophyId])
+  @@index([optionId])
+  @@index([philosophyId])
+  @@map("quiz_option_scores")
+}
