@@ -125,7 +125,14 @@ export class AuthService {
     });
 
     const newRefreshTokenHash = await PasswordUtil.hash(newRefreshToken);
-    await this.userRepository.updateRefreshTokenHash(user.id, newRefreshTokenHash);
+    const tokenRotated = await this.userRepository.replaceRefreshTokenHash(
+      user.id,
+      user.refreshTokenHash,
+      newRefreshTokenHash
+    );
+    if (!tokenRotated) {
+      throw ApiError.unauthorized('Yenileme tokenı zaten kullanılmış', ErrorCodes.TOKEN_INVALID);
+    }
 
     return {
       tokens: {

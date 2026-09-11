@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { InteractionStatus } from '@prisma/client';
 
+const positiveInteger = z.coerce.number().int().positive();
+
 export const upsertInteractionSchema = z.object({
   recommendationItemId: z.string().uuid('Geçerli bir öneri öğesi ID girilmelidir'),
   status: z.nativeEnum(InteractionStatus).default(InteractionStatus.SAVED),
@@ -11,8 +13,12 @@ export const upsertInteractionSchema = z.object({
 export const getMyLibraryQuerySchema = z.object({
   status: z.nativeEnum(InteractionStatus).optional(),
   philosophySlug: z.string().optional(),
-  page: z.string().optional().transform((v) => (v ? Math.max(1, parseInt(v, 10)) : 1)),
-  limit: z.string().optional().transform((v) => (v ? Math.min(100, Math.max(1, parseInt(v, 10))) : 20)),
+  page: positiveInteger.default(1),
+  limit: positiveInteger.max(100).default(20),
+});
+
+export const interactionItemIdParamSchema = z.object({
+  itemId: z.string().uuid('Geçerli bir öneri öğesi ID girilmelidir'),
 });
 
 export type UpsertInteractionInput = z.infer<typeof upsertInteractionSchema>;

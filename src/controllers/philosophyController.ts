@@ -18,7 +18,7 @@ export class PhilosophyController {
 
   getBySlug = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { slug } = req.params;
+      const { slug } = req.params as { slug: string };
       const difficultyLevel = req.query.difficultyLevel as DifficultyLevel | undefined;
       const philosophy = await this.philosophyService.getPhilosophyBySlug(slug, difficultyLevel);
       ApiResponse.ok(res, philosophy, 'Felsefi akım detayları ve önerileri başarıyla getirildi');
@@ -38,7 +38,7 @@ export class PhilosophyController {
 
   update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { id } = req.params;
+      const { id } = req.params as { id: string };
       const updated = await this.philosophyService.updatePhilosophy(id, req.body);
       ApiResponse.ok(res, updated, 'Felsefi akım başarıyla güncellendi');
     } catch (error) {
@@ -48,7 +48,7 @@ export class PhilosophyController {
 
   delete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { id } = req.params;
+      const { id } = req.params as { id: string };
       await this.philosophyService.deletePhilosophy(id);
       ApiResponse.ok(res, null, 'Felsefi akım başarıyla silindi');
     } catch (error) {

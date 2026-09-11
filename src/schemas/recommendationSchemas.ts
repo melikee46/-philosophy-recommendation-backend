@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { ItemType, DifficultyLevel } from '@prisma/client';
 
+const positiveInteger = z.coerce.number().int().positive();
+
 export const recommendationPackQuerySchema = z.object({
   philosophy: z.string().min(1, 'Felsefi akım slug veya ID gereklidir'),
   level: z.nativeEnum(DifficultyLevel).default(DifficultyLevel.BEGINNER),
@@ -23,8 +25,12 @@ export const filterRecommendationsQuerySchema = z.object({
   type: z.nativeEnum(ItemType).optional(),
   difficultyLevel: z.nativeEnum(DifficultyLevel).optional(),
   search: z.string().optional(),
-  page: z.string().optional().transform((v) => (v ? Math.max(1, parseInt(v, 10)) : 1)),
-  limit: z.string().optional().transform((v) => (v ? Math.min(100, Math.max(1, parseInt(v, 10))) : 20)),
+  page: positiveInteger.default(1),
+  limit: positiveInteger.max(100).default(20),
+});
+
+export const recommendationIdParamSchema = z.object({
+  id: z.string().uuid('Geçerli bir öneri öğesi ID girilmelidir'),
 });
 
 export type RecommendationPackQuery = z.infer<typeof recommendationPackQuerySchema>;

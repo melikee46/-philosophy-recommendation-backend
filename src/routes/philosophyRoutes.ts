@@ -6,6 +6,8 @@ import {
   createPhilosophySchema,
   updatePhilosophySchema,
   getPhilosophyQuerySchema,
+  philosophyIdParamSchema,
+  philosophySlugParamSchema,
 } from '../schemas/philosophySchemas';
 import { Role } from '@prisma/client';
 
@@ -16,6 +18,7 @@ const philosophyController = new PhilosophyController();
 router.get('/', philosophyController.getAll);
 router.get(
   '/:slug',
+  validateRequest({ params: philosophySlugParamSchema }),
   validateRequest({ query: getPhilosophyQuerySchema }),
   philosophyController.getBySlug
 );
@@ -33,6 +36,7 @@ router.put(
   '/:id',
   authenticate,
   authorize(Role.ADMIN),
+  validateRequest({ params: philosophyIdParamSchema }),
   validateRequest({ body: updatePhilosophySchema }),
   philosophyController.update
 );
@@ -41,6 +45,7 @@ router.delete(
   '/:id',
   authenticate,
   authorize(Role.ADMIN),
+  validateRequest({ params: philosophyIdParamSchema }),
   philosophyController.delete
 );
 

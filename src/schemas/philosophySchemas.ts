@@ -19,6 +19,14 @@ export const getPhilosophyQuerySchema = z.object({
   difficultyLevel: z.nativeEnum(DifficultyLevel).optional(),
 });
 
+export const philosophyIdParamSchema = z.object({
+  id: z.string().uuid('Geçerli bir felsefe ID girilmelidir'),
+});
+
+export const philosophySlugParamSchema = z.object({
+  slug: z.string().min(2).max(50).regex(/^[a-z0-9-]+$/, 'Geçerli bir slug girilmelidir'),
+});
+
 export type CreatePhilosophyInput = z.infer<typeof createPhilosophySchema>;
 export type UpdatePhilosophyInput = z.infer<typeof updatePhilosophySchema>;
 export type GetPhilosophyQuery = z.infer<typeof getPhilosophyQuerySchema>;

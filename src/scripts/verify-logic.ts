@@ -57,6 +57,15 @@ async function runTests() {
     throw new Error('Register schema should have rejected invalid input!');
   }
 
+  const oversizedPassword = registerSchema.safeParse({
+    email: 'epictetus@rome.it',
+    username: 'epictetus',
+    password: 'a'.repeat(73),
+  });
+  if (oversizedPassword.success) {
+    throw new Error('Register schema should reject passwords exceeding bcrypt\'s 72-byte limit!');
+  }
+
   const packQuery = recommendationPackQuerySchema.safeParse({
     philosophy: 'stoicism',
     level: 'BEGINNER',
@@ -75,6 +84,22 @@ async function runTests() {
   });
   if (!quizSubmission.success) {
     throw new Error('Quiz submission schema failed: ' + JSON.stringify(quizSubmission.error));
+  }
+
+  const duplicateQuizSubmission = submitQuizSchema.safeParse({
+    answers: [
+      {
+        questionId: '123e4567-e89b-12d3-a456-426614174000',
+        selectedOptionId: '123e4567-e89b-12d3-a456-426614174001',
+      },
+      {
+        questionId: '123e4567-e89b-12d3-a456-426614174000',
+        selectedOptionId: '123e4567-e89b-12d3-a456-426614174002',
+      },
+    ],
+  });
+  if (duplicateQuizSubmission.success) {
+    throw new Error('Quiz schema should reject duplicate question answers!');
   }
   console.log('✅ 3. Zod validation schemas passed all validation assertions.');
 

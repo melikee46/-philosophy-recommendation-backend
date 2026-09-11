@@ -9,29 +9,42 @@ export interface TokenPayload {
   email: string;
   username: string;
   role: Role;
+  type: 'access';
 }
 
 export interface RefreshTokenPayload {
   userId: string;
-  tokenVersion?: number;
+  type: 'refresh';
 }
 
 export class JwtUtil {
-  static generateAccessToken(payload: TokenPayload): string {
-    return jwt.sign(payload, env.JWT_ACCESS_SECRET, {
+  static generateAccessToken(payload: Omit<TokenPayload, 'type'>): string {
+    return jwt.sign({ ...payload, type: 'access' }, env.JWT_ACCESS_SECRET, {
       expiresIn: env.JWT_ACCESS_EXPIRES_IN as jwt.SignOptions['expiresIn'],
+      algorithm: 'HS256',
+      issuer: 'philosophy-recommendation-api',
+      audience: 'philosophy-recommendation-client',
     });
   }
 
-  static generateRefreshToken(payload: RefreshTokenPayload): string {
-    return jwt.sign(payload, env.JWT_REFRESH_SECRET, {
+  static generateRefreshToken(payload: Omit<RefreshTokenPayload, 'type'>): string {
+    return jwt.sign({ ...payload, type: 'refresh' }, env.JWT_REFRESH_SECRET, {
       expiresIn: env.JWT_REFRESH_EXPIRES_IN as jwt.SignOptions['expiresIn'],
+      algorithm: 'HS256',
+      issuer: 'philosophy-recommendation-api',
+      audience: 'philosophy-recommendation-client',
     });
   }
 
   static verifyAccessToken(token: string): TokenPayload {
     try {
-      return jwt.verify(token, env.JWT_ACCESS_SECRET) as TokenPayload;
+      const payload = jwt.verify(token, env.JWT_ACCESS_SECRET, {
+        algorithms: ['HS256'],
+        issuer: 'philosophy-recommendation-api',
+        audience: 'philosophy-recommendation-client',
+      }) as TokenPayload;
+      if (payload.type !== 'access') throw new jwt.JsonWebTokenError('Invalid token type');
+      return payload;
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
         throw ApiError.unauthorized('Erişim tokenının süresi dolmuş', ErrorCodes.TOKEN_EXPIRED);
@@ -42,7 +55,13 @@ export class JwtUtil {
 
   static verifyRefreshToken(token: string): RefreshTokenPayload {
     try {
-      return jwt.verify(token, env.JWT_REFRESH_SECRET) as RefreshTokenPayload;
+      const payload = jwt.verify(token, env.JWT_REFRESH_SECRET, {
+        algorithms: ['HS256'],
+        issuer: 'philosophy-recommendation-api',
+        audience: 'philosophy-recommendation-client',
+      }) as RefreshTokenPayload;
+      if (payload.type !== 'refresh') throw new jwt.JsonWebTokenError('Invalid token type');
+      return payload;
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
         throw ApiError.unauthorized('Yenileme tokenının süresi dolmuş', ErrorCodes.TOKEN_EXPIRED);

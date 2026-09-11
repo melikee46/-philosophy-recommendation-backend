@@ -7,6 +7,7 @@ import {
   filterRecommendationsQuerySchema,
   createRecommendationItemSchema,
   updateRecommendationItemSchema,
+  recommendationIdParamSchema,
 } from '../schemas/recommendationSchemas';
 import { Role } from '@prisma/client';
 
@@ -30,7 +31,7 @@ router.get(
   recommendationController.getAll
 );
 
-router.get('/:id', recommendationController.getById);
+router.get('/:id', validateRequest({ params: recommendationIdParamSchema }), recommendationController.getById);
 
 // Admin-only management
 router.post(
@@ -45,6 +46,7 @@ router.put(
   '/:id',
   authenticate,
   authorize(Role.ADMIN),
+  validateRequest({ params: recommendationIdParamSchema }),
   validateRequest({ body: updateRecommendationItemSchema }),
   recommendationController.update
 );
@@ -53,6 +55,7 @@ router.delete(
   '/:id',
   authenticate,
   authorize(Role.ADMIN),
+  validateRequest({ params: recommendationIdParamSchema }),
   recommendationController.delete
 );
 

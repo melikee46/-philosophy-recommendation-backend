@@ -26,7 +26,9 @@ export class QuizRepository {
       where: {
         id: { in: optionIds },
       },
-      include: {
+      select: {
+        id: true,
+        questionId: true,
         scores: {
           include: {
             philosophy: {

@@ -45,4 +45,16 @@ export class UserRepository {
       data: { refreshTokenHash },
     });
   }
+
+  async replaceRefreshTokenHash(
+    userId: string,
+    currentRefreshTokenHash: string,
+    nextRefreshTokenHash: string
+  ): Promise<boolean> {
+    const result = await prisma.user.updateMany({
+      where: { id: userId, refreshTokenHash: currentRefreshTokenHash },
+      data: { refreshTokenHash: nextRefreshTokenHash },
+    });
+    return result.count === 1;
+  }
 }

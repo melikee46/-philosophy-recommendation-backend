@@ -4,6 +4,16 @@ import * as bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Database seeding is disabled in production.');
+  }
+
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+  const demoPassword = process.env.SEED_DEMO_PASSWORD;
+  if (!adminPassword || !demoPassword || adminPassword.length < 12 || demoPassword.length < 12) {
+    throw new Error('SEED_ADMIN_PASSWORD and SEED_DEMO_PASSWORD must each be at least 12 characters.');
+  }
+
   console.log('🌱 Starting database seeding...');
 
   // 1. Clean existing records in reverse dependency order
@@ -18,9 +28,9 @@ async function main() {
   console.log('🧹 Cleaned existing records.');
 
   // 2. Seed Users
-  const salt = await bcrypt.genSalt(10);
-  const adminPasswordHash = await bcrypt.hash('Admin123!@#', salt);
-  const userPasswordHash = await bcrypt.hash('User123!@#', salt);
+  const salt = await bcrypt.genSalt(12);
+  const adminPasswordHash = await bcrypt.hash(adminPassword, salt);
+  const userPasswordHash = await bcrypt.hash(demoPassword, salt);
 
   const admin = await prisma.user.create({
     data: {

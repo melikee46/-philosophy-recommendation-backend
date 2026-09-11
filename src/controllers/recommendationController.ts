@@ -44,7 +44,7 @@ export class RecommendationController {
 
   getById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { id } = req.params;
+      const { id } = req.params as { id: string };
       const item = await this.recommendationService.getRecommendationById(id);
       ApiResponse.ok(res, item, 'Öneri detayı başarıyla getirildi');
     } catch (error) {
@@ -63,7 +63,7 @@ export class RecommendationController {
 
   update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { id } = req.params;
+      const { id } = req.params as { id: string };
       const updated = await this.recommendationService.updateRecommendationItem(id, req.body);
       ApiResponse.ok(res, updated, 'Öneri öğesi başarıyla güncellendi');
     } catch (error) {
@@ -73,7 +73,7 @@ export class RecommendationController {
 
   delete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { id } = req.params;
+      const { id } = req.params as { id: string };
       await this.recommendationService.deleteRecommendationItem(id);
       ApiResponse.ok(res, null, 'Öneri öğesi başarıyla silindi');
     } catch (error) {

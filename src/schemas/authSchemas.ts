@@ -9,18 +9,21 @@ export const registerSchema = z.object({
     .regex(/^[a-zA-Z0-9_]+$/, 'Kullanıcı adı sadece harf, rakam ve alt çizgi içerebilir'),
   password: z
     .string()
-    .min(6, 'Şifre en az 6 karakter olmalıdır')
-    .max(100, 'Şifre en fazla 100 karakter olabilir'),
-});
+    .min(12, 'Şifre en az 12 karakter olmalıdır')
+    .refine(
+      (password) => Buffer.byteLength(password, 'utf8') <= 72,
+      'Şifre UTF-8 olarak en fazla 72 byte olabilir'
+    ),
+}).strict();
 
 export const loginSchema = z.object({
   identifier: z.string().min(1, 'E-posta veya kullanıcı adı gereklidir'),
   password: z.string().min(1, 'Şifre gereklidir'),
-});
+}).strict();
 
 export const refreshTokenSchema = z.object({
   refreshToken: z.string().min(1, 'Yenileme tokenı gereklidir'),
-});
+}).strict();
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;

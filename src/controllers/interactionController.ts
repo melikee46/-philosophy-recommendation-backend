@@ -33,7 +33,7 @@ export class InteractionController {
   delete = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId = req.user!.id;
-      const { itemId } = req.params;
+      const { itemId } = req.params as { itemId: string };
       await this.interactionService.removeInteraction(userId, itemId);
       ApiResponse.ok(res, null, 'Öğe kütüphanenizden kaldırıldı');
     } catch (error) {

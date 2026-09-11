@@ -5,6 +5,7 @@ import { authenticate } from '../middlewares/authMiddleware';
 import {
   upsertInteractionSchema,
   getMyLibraryQuerySchema,
+  interactionItemIdParamSchema,
 } from '../schemas/interactionSchemas';
 
 const router = Router();
@@ -27,6 +28,6 @@ router.get(
 
 router.get('/stats', interactionController.getStats);
 
-router.delete('/:itemId', interactionController.delete);
+router.delete('/:itemId', validateRequest({ params: interactionItemIdParamSchema }), interactionController.delete);
 
 export default router;

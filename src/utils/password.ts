@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 
 export class PasswordUtil {
-  private static readonly SALT_ROUNDS = 10;
+  private static readonly SALT_ROUNDS = 12;
 
   static async hash(password: string): Promise<string> {
     const salt = await bcrypt.genSalt(this.SALT_ROUNDS);

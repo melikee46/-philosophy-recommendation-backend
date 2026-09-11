@@ -29,8 +29,15 @@ export class QuizService {
     const optionIds = input.answers.map((a) => a.selectedOptionId);
     const optionsWithScores = await this.quizRepository.getOptionsWithScores(optionIds);
 
-    if (optionsWithScores.length === 0) {
+    if (optionsWithScores.length !== input.answers.length) {
       throw ApiError.badRequest('Seçilen yanıtlar bulunamadı veya geçersiz');
+    }
+
+    const expectedQuestionByOptionId = new Map(
+      input.answers.map((answer) => [answer.selectedOptionId, answer.questionId])
+    );
+    if (optionsWithScores.some((option) => option.questionId !== expectedQuestionByOptionId.get(option.id))) {
+      throw ApiError.badRequest('Seçilen seçenek ilgili soruya ait değil');
     }
 
     // Map to aggregate scores per philosophy
